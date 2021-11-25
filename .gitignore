@@ -1,2 +1,4 @@
 .DS_Store
-JuliaSysimage.dylib
+*.ai
+*.svg
+*.csv
