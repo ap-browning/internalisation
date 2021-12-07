@@ -1,6 +1,6 @@
 # Internalisation
 
-Repository for the preprint "Identifying cell-to-cell variability in internalisation using flow cytometry" available on bioRxiv. 
+Repository for the preprint "Identifying cell-to-cell variability in internalisation using flow cytometry" available on [bioRxiv](https://www.biorxiv.org/content/10.1101/2021.11.24.469957v1).
 
 ## Data
 
@@ -23,5 +23,7 @@ Next, run the following code (press `]` to enter the `Pkg` REPL) to install all 
 ```
 
 ### Results
+
+Scripts to produce the results are available in the `Results` folder. For example, to produce the main results, run `MainResult_Inference.jl` (takes approximately 24 h to perform ABC on a standard, quad-core machine). For convenience, this script saves its output to `MainResult.jld2`.
 
 Code used to produce each figure in the main document and supplementary material is available in the `Figures` folder. For example, to reproduce Figure 4, run `Figures/Fig4/Fig4.jl`.
