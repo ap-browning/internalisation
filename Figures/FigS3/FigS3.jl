@@ -1,5 +1,6 @@
-## Explanation of skewness parameters
-
+#=
+    Figure S3
+=#
 using Optim
 
 xlim = [0.0,0.5]

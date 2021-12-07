@@ -1,8 +1,8 @@
 #=
-    Figure 3
+    Figure S1
 =#
 
-using Model # To get colours
+using Model
 
 using CSV
 using DataFrames
@@ -10,31 +10,34 @@ using DataFramesMeta
 using Plots
 using StatsPlots
 
-##############################################################
-## Data
-##############################################################
-
-data = CSV.read("Data/CSV/DualMarker.csv",DataFrame)
-
-# Get autofluorescence information
-E = [@subset(data,:Time .== 0.0, :Quenched .== false, :Temp .== 37.0).Signal_Cy5,
-     @subset(data,:Time .== 0.0, :Quenched .== false, :Temp .== 37.0).Signal_BDP]
+include("../figure_defaults.jl")
 
 ##############################################################
-## Figure 3
+## Run/load analysis
 ##############################################################
 
-fig3 = density2d(E[1],E[2],
-    colorbar=false,
-    xlim=(0.0,20.0),
-    ylim=(0.0,20.0),
-    box=:on,axis=:all,aspect_ratio=:equal,lw=0.0,c=:RdPu_9,levels=8,fill=true,
-    xlabel="Cy5 autofluoresence",
-    ylabel="BDP autofluoresence"
+include("../../Results/EstimateBinding.jl")
+
+##############################################################
+## Fig S1
+##############################################################
+
+figS1 = plot(log_γ, LLopt .- maximum(LLopt),
+    ylim=(-3.0,0.5),
+    frange = -4.0,
+    fα = 0.2,
+    lw = 2.0,
+    c  = :black,
+    box = :on,
+    widen=false,
+    legend=:none,
+    xlabel="log(γ)",
+    ylabel="Profile Loglikelihood"
 )
+hline!(figS1,[-1.92],ls=:dash,lw=2.0,c=:red)
 
 ##############################################################
-## Save
+## Save...
 ##############################################################
 
-savefig("$(@__DIR__)/Fig3.svg")
+savefig("$(@__DIR__)/FigS1.svg")
