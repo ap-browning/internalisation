@@ -1,59 +1,51 @@
 #=
     Figure S3
 =#
-using Optim
 
-xlim = [0.0,0.5]
-xgrd = range(xlim...,length=200)
+using Model # To get colours
 
-μ = 0.25
-σ = [0.01,0.05,0.1]
+using CSV
+using ColorSchemes
+using DataFrames
+using DataFramesMeta
+using Plots
+using StatsPlots
 
-ω = [-1.5,-0.5,0.0001,0.5,1.5]
+include("../figure_defaults.jl")
 
-σᵢ = σ[1]
+##############################################################
+## Data
+##############################################################
 
-plts = [plot() for i = 1:length(σ)]
+data = @subset(CSV.read("Data/CSV/DualMarker.csv",DataFrame), :Temp .== 37.0, :Time .> 0.0)
 
-for (i,σᵢ) in enumerate(σ)
+##############################################################
+## Univariate
+##############################################################
 
-    pltsᵢ = [plot() for i = 1:length(ω)]
+T = sort(unique(data.Time))
 
-    for (j,ωⱼ) in enumerate(ω)
+plts_q = [plot() for t in T]
+plts_u = [plot() for t in T]
 
-        λ = GammaAlt(μ,σᵢ,ωⱼ)
+for (i,t) in enumerate(T)
 
-        # Find mode
-        m = optimize(x -> -pdf(λ,x),xlim...).minimizer
+    @df @subset(data,:Time .== t,(!).(:Quenched)) density!(plts_q[i],:Signal_Cy5 / 1e4,c=col_Q,lw=2.0,frange=0.0,fα=0.4,label="Not quenched")
+    @df @subset(data,:Time .== t,:Quenched) density!(plts_q[i],:Signal_Cy5 / 1e4,c=col_Q̄,lw=2.0,frange=0.0,fα=0.4,ls=:dash,label="Quenched")
+    plot!(plts_q[i],xlim=(0.0,3.0),widen=:false,yticks=[],xlabel="Cy5 (10⁴)",axis=:x,title="$(Int(t)) min")
 
-        if ωⱼ > 0.0
-            xmap = x -> x .> m ? 2m - x : x
-        elseif ωⱼ < 0.0
-            xmap = x -> x .< m ? 2m - x : x
-        else
-            xmap = x -> x
-        end
+    @df @subset(data,:Time .== t,(!).(:Quenched)) density!(plts_u[i],:Signal_BDP,c=col_U,lw=2.0,frange=0.0,fα=0.4,label="Not quenched")
+    @df @subset(data,:Time .== t,:Quenched) density!(plts_u[i],:Signal_BDP,c=col_Ū,lw=2.0,frange=0.0,fα=0.4,ls=:dash,label="Quenched")
+    plot!(plts_u[i],xlim=(0.0,120.0),widen=:false,yticks=[],xlabel="BDP",axis=:x)
 
-        # Plot symmetric distribution
-        plot!(pltsᵢ[j],xgrd,pdf(λ,xmap.(xgrd)),lw=2.0,c=:red,α=0.5,ls=:dash)
-        plot!(pltsᵢ[j],xgrd,pdf(λ,xgrd),lw=2.0,c=:black)
-
+    if i > 1
+        plot!(plts_q[i],legend=:none)
+        plot!(plts_u[i],legend=:none)
     end
-
-    plts[i] = plot(pltsᵢ...,layout=grid(1,length(ω)))
-    if i < length(σ)
-        plot!(plts[i],xticks=(0.0:0.1:0.5,[]))
-    else
-        plot!(plts[i],xticks=0.0:0.1:0.5)
-    end
-    plot!(plts[i],subplot=1,ylabel="σ = $σᵢ")
 
 end
 
-figS3 = plot(plts...,layout=grid(length(σ),1),yticks=[],axis=:x,legend=:none,size=(700,400))
-[plot!(figS3,subplot=i,title="ω = $ωᵢ") for (i,ωᵢ) in enumerate(ω)]
-[plot!(figS3,subplot=i,xlabel="λ") for i = 11:15]
-figS3
+figS3 = plot(plts_q...,plts_u...,layout=grid(2,7),size=(800,250))
 
 ##############################################################
 ## Save...
